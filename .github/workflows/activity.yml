@@ -1,0 +1,42 @@
+name: Activity Engine
+
+on:
+  schedule:
+    - cron: "17 14 * * *"
+    - cron: "41 20 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  activity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run activity engine
+        run: python activity.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "ItsMeCodyy"
+          git config user.email "${{ secrets.COMMIT_EMAIL }}"
+
+          git add activity.json README.md
+
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+
+          git commit -m "chore: automated activity update"
+          git push
